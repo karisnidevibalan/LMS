@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+
+  background-image: radial-gradient(circle at top left, #fef9c3, #fcd5ce, #f9c5d1, #e0bbf9);
+  @apply min-h-screen text-white transition-colors duration-300;
+}
+
+.dark body {
+  background-image: radial-gradient(circle at top left, #0f172a, #1e293b);
+  @apply text-gray-100;
+}
+
+
