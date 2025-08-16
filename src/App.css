@@ -1,0 +1,125 @@
+/* App.css */
+
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.container {
+  animation: fadeInPage 1.5s ease-out;
+}
+
+.auth-box {
+  background: rgba(255, 255, 255, 0.97);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.8s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+  color: #4b0082;
+  margin-bottom: 1.2rem;
+  font-weight: bold;
+  animation: fadeIn 1s ease;
+}
+
+.form .input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  margin: 0.6rem 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border 0.3s;
+}
+
+.form .input:focus {
+  border-color: #667eea;
+  outline: none;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(to right, #5a67d8, #6b46c1);
+}
+
+.toggle-text {
+  margin-top: 1.2rem;
+  text-align: center;
+  color: #4a4a4a;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.toggle-text:hover {
+  color: #2d2d2d;
+}
+
+.message {
+  margin-top: 1rem;
+  text-align: center;
+  color: #008000;
+  font-weight: 500;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInPage {
+  from {
+    opacity: 0;
+    background: #333;
+  }
+  to {
+    opacity: 1;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+}
