@@ -9,8 +9,13 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_fallback_secret_key_here';
 // Register Route
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
-    console.log("📥 Register attempt:", { name, email, role });
+    const { name, email, password, role, instituteName, educationLevel, careerDetails } = req.body;
+    console.log("📥 Register attempt:", { name, email, role, instituteName, educationLevel });
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required' });
+    }
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -18,7 +23,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Email already registered' });
     }
 
-    const newUser = new User({ name, email, password, role });
+    const newUser = new User({ 
+      name, 
+      email, 
+      password, 
+      role: role || 'student',
+      instituteName,
+      educationLevel,
+      careerDetails
+    });
     await newUser.save();
 // After await newUser.save();
 const token = jwt.sign({ id: newUser._id, role: newUser.role }, JWT_SECRET, {

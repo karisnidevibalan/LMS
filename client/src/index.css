@@ -1,15 +1,31 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-body {
 
+body {
   background-image: radial-gradient(circle at top left, #fef9c3, #fcd5ce, #f9c5d1, #e0bbf9);
-  @apply min-h-screen text-white transition-colors duration-300;
+  min-height: 100vh;
+  color: white;
+  transition: all 0.3s ease;
 }
 
 .dark body {
   background-image: radial-gradient(circle at top left, #0f172a, #1e293b);
-  @apply text-gray-100;
+  color: #f3f4f6;
+}
+
+/* Custom animations */
+.animate-fade {
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 

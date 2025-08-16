@@ -23,7 +23,7 @@ const Login = () => {
      if (data.user.role === 'teacher') {
   navigate('/teacher'); // ✅ matches <Route path="/teacher" />
 } else {
-  navigate('/student/mycourses'); // ✅ matches <Route path="/student/mycourses" />
+  navigate('/student'); // Navigate to student dashboard instead
 }
 
     } catch (err) {

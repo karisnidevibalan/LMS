@@ -30,14 +30,24 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formData = new FormData();
-      Object.keys(form).forEach((key) => {
-        formData.append(key, form[key]);
+      // Send JSON data instead of FormData for registration
+      const registrationData = {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        instituteName: form.instituteName,
+        educationLevel: form.educationLevel,
+        careerDetails: form.careerDetails
+      };
+
+      const response = await axios.post('http://localhost:5000/api/auth/register', registrationData, {
+        headers: { 
+          'Content-Type': 'application/json'
+        },
       });
 
-      await axios.post('http://localhost:5000/api/auth/register', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      console.log('Registration successful:', response.data);
 
       // 🎉 Trigger confetti on success
       confetti({

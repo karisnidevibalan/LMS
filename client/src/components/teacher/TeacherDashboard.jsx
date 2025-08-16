@@ -1,21 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
+import CourseCard from '../Coursecard';
 
 const TeacherDashboard = () => {
-  // Sample teacher's course list
-  const courses = [
-    {
-      id: 1,
-      title: 'Introduction to AI',
-      description: 'Learn the basics of Artificial Intelligence and its applications.',
-    },
-    {
-      id: 2,
-      title: 'React for Beginners',
-      description: 'Build powerful UIs using React.js step by step.',
-    },
-  ];
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  // Fetch courses from backend
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError("Please log in to view your courses");
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/api/course/my-courses", {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await res.json();
+
+        if (res.ok) {
+          setCourses(data);
+        } else {
+          setError(data.error || "Failed to fetch courses");
+        }
+      } catch (err) {
+        console.error("Error fetching courses:", err);
+        setError("Error connecting to server");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   return (
     <div className="min-h-screen px-6 pt-20 pb-10 bg-gradient-to-b from-[#fdf4ff] via-[#e0e7ff] to-[#ede9fe] dark:from-[#1e1b4b] dark:to-[#312e81]">
@@ -29,23 +56,16 @@ const TeacherDashboard = () => {
         </Link>
       </div>
 
+      {loading && <p className="text-gray-600 dark:text-gray-300">Loading courses...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {!loading && courses.length === 0 && (
+        <p className="text-gray-600 dark:text-gray-300">No courses found. Add your first course!</p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <div
-            key={course.id}
-            className="bg-white dark:bg-[#2d2a4a] p-4 rounded-xl shadow hover:shadow-lg transition transform hover:-translate-y-1"
-          >
-            <h3 className="text-xl font-semibold text-purple-700 dark:text-purple-300 mb-2">
-              {course.title}
-            </h3>
-            <p className="text-gray-700 dark:text-gray-300 mb-4">{course.description}</p>
-            <Link
-              to={`/teacher/course/${course.id}`}
-              className="text-sm text-purple-600 hover:underline dark:text-purple-200"
-            >
-              View Details
-            </Link>
-          </div>
+        {courses.map(course => (
+          <CourseCard key={course._id} course={course} showTeacherActions={true} />
         ))}
       </div>
     </div>

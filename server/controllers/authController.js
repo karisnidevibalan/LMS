@@ -101,3 +101,24 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: 'Login failed', details: err.message });
   }
 };
+
+// ✅ Get User Profile Controller
+exports.getProfile = async (req, res) => {
+  try {
+    const user = req.user; // From auth middleware
+    
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      instituteName: user.instituteName,
+      educationLevel: user.educationLevel,
+      careerDetails: user.careerDetails,
+      idProofUrl: user.idProofUrl,
+    });
+  } catch (err) {
+    console.error('Profile Error:', err);
+    res.status(500).json({ error: 'Failed to get profile', details: err.message });
+  }
+};

@@ -3,9 +3,9 @@ const Course = require('../models/Course');
 const createCourse = async (req, res) => {
   try {
     const { title, description, category } = req.body;
-    const teacher = req.user.id;
+    const teacherId = req.user.id;
 
-    const course = await Course.create({ title, description, category, teacher });
+    const course = await Course.create({ title, description, category, teacherId });
     res.status(201).json(course);
   } catch (err) {
     res.status(500).json({ message: 'Error creating course', error: err.message });
@@ -14,7 +14,7 @@ const createCourse = async (req, res) => {
 
 const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find().populate('teacher', 'name');
+    const courses = await Course.find().populate('teacherId', 'name');
     res.json(courses);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching courses' });
@@ -23,7 +23,7 @@ const getAllCourses = async (req, res) => {
 
 const getCourseById = async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id).populate('teacher', 'name');
+    const course = await Course.findById(req.params.id).populate('teacherId', 'name');
     if (!course) return res.status(404).json({ message: 'Course not found' });
 
     res.json(course);

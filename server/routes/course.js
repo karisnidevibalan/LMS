@@ -31,6 +31,32 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/course/my-courses - Get teacher's courses (must be before /:id route)
+router.get('/my-courses', verifyToken(['teacher']), async (req, res) => {
+  try {
+    console.log('Fetching courses for teacher:', req.user._id);
+    const courses = await Course.find({ teacherId: req.user._id });
+    console.log('Found courses:', courses.length);
+    res.json(courses);
+  } catch (err) {
+    console.error('Error fetching teacher courses:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/course/enrolled - Get student's enrolled courses
+router.get('/enrolled', verifyToken(['student']), async (req, res) => {
+  try {
+    const courses = await Course.find({ enrolledStudents: req.user._id })
+      .populate('teacherId', 'name email')
+      .select('-lessons.content');
+    res.json(courses);
+  } catch (err) {
+    console.error('Error fetching enrolled courses:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/course/:id - Get single course by ID
 router.get('/:id', async (req, res) => {
   try {
@@ -49,7 +75,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/course - Create a new course (teacher only)
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', verifyToken(['teacher']), async (req, res) => {
   try {
     const { title, description, category, level, duration, price } = req.body;
 
@@ -61,6 +87,11 @@ router.post('/', verifyToken, async (req, res) => {
     const newCourse = new Course({
       title,
       description,
+      teacherId: req.user._id, // Set the teacher ID from authenticated user
+      category: category || 'other', // Use lowercase enum value
+      level: level || 'beginner', // Use lowercase enum value
+      duration: duration || 0,
+      price: price || 0
     });
 
     const saved = await newCourse.save();
@@ -72,7 +103,7 @@ router.post('/', verifyToken, async (req, res) => {
 });
 
 // PUT /api/course/:id - Update course (teacher only)
-router.put('/:id', verifyToken, async (req, res) => {
+router.put('/:id', verifyToken(['teacher']), async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
@@ -94,8 +125,26 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
+// DELETE /api/course/:id - Delete course (teacher only)
+router.delete('/:id', verifyToken(['teacher']), async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    if (!course.teacherId.equals(req.user.id)) {
+      return res.status(403).json({ error: 'Only the course teacher can delete this course' });
+    }
+
+    await Course.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Course deleted successfully' });
+  } catch (err) {
+    console.error('❌ Failed to delete course:', err.message);
+    res.status(500).json({ error: 'Failed to delete course' });
+  }
+});
+
 // POST /api/course/:id/enroll - Enroll in a course (student only)
-router.post('/:id/enroll', verifyToken, async (req, res) => {
+router.post('/:id/enroll', verifyToken(['student']), async (req, res) => {
   try {
     if (req.user.role !== 'student') {
       return res.status(403).json({ error: 'Only students can enroll in courses' });
@@ -113,7 +162,7 @@ router.post('/:id/enroll', verifyToken, async (req, res) => {
 });
 
 // DELETE /api/course/:id/enroll - Unenroll from course (student only)
-router.delete('/:id/enroll', verifyToken, async (req, res) => {
+router.delete('/:id/enroll', verifyToken(['student']), async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
@@ -127,7 +176,7 @@ router.delete('/:id/enroll', verifyToken, async (req, res) => {
 });
 
 // POST /api/course/:id/rate - Rate a course (only if enrolled)
-router.post('/:id/rate', verifyToken, async (req, res) => {
+router.post('/:id/rate', verifyToken(['student']), async (req, res) => {
   try {
     const { rating, comment } = req.body;
 

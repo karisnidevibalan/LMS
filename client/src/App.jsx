@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import RoutesComponent from './routes';
-import Navbar from './components/Navbar';
+import EnhancedNavbar from './components/EnhancedNavbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
 import QuoteBanner from './components/QuoteBanner';
@@ -26,10 +26,9 @@ function App() {
 
   return (
     <Router>
-      <Navbar toggleDarkMode={() => setDarkMode(!darkMode)} isDarkMode={darkMode} />
+      <EnhancedNavbar toggleDarkMode={() => setDarkMode(!darkMode)} isDarkMode={darkMode} />
       <QuoteBanner />
       <div className="pt-4">
-
         <RoutesComponent />
       </div>
       <Toast />
