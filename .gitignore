@@ -102,3 +102,6 @@ dist-ssr
 *.sw?
 *.env
 >>>>>>> 707a91c59ba987ba028eb1e4e1677f7e1bc3de02
+.env
+.env
+.env.example
