@@ -18,12 +18,10 @@ const CourseDetails = () => {
     const fetchCourseDetails = async () => {
       try {
         const token = localStorage.getItem('token');
-        
         // Always fetch course details, and conditionally prepare other requests
         const requests = [
           cachedGet(`/course/${id}`, 'course', 10 * 60 * 1000)
         ];
-        
         // Add enrolled courses request if user is authenticated
         if (token) {
           requests.push(
@@ -32,25 +30,32 @@ const CourseDetails = () => {
             })
           );
         }
-        
         // Execute requests in parallel
         const responses = await Promise.all(requests);
         const courseResponse = responses[0];
         setCourse(courseResponse.data);
-        
-        // Handle enrollment check if user is authenticated
+        // Always refresh user object from backend if token exists
+        let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (token) {
+          try {
+            const userResponse = await cachedGet('/auth/me', 'user', 2 * 60 * 1000, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            currentUser = userResponse.data;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+          } catch (userError) {
+            console.warn('Could not fetch user from backend:', userError);
+          }
+        }
         if (token && responses[1]) {
           const enrolledResponse = responses[1];
           const enrolledCourses = enrolledResponse.data;
           const alreadyEnrolled = enrolledCourses.some(enrolledCourse => enrolledCourse._id === id);
           setIsEnrolled(alreadyEnrolled);
-          
           // Check if user is teacher of this course
-          const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
           const isTeacher = currentUser.role === 'teacher' && 
                            (courseResponse.data.teacherId === currentUser._id || 
-                            courseResponse.data.teacherId.toString() === currentUser._id);
-          
+                            courseResponse.data.teacherId?.toString() === currentUser._id);
           console.log('Enrollment check:', {
             alreadyEnrolled,
             isTeacher,
@@ -59,7 +64,6 @@ const CourseDetails = () => {
             courseTeacherId: courseResponse.data.teacherId,
             shouldFetchMaterials: alreadyEnrolled || isTeacher
           });
-          
           // Only fetch materials if enrolled OR if user is the teacher
           if (alreadyEnrolled || isTeacher) {
             try {

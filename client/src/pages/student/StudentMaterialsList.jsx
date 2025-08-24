@@ -271,14 +271,12 @@ const StudentMaterialsList = () => {
                   <span className="text-gray-500">Chapter:</span>
                   <span className="font-medium">{material.chapter || 'General'}</span>
                 </div>
-                
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Difficulty:</span>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(material.difficulty)}`}>
                     {material.difficulty}
                   </span>
                 </div>
-                
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">Study Time:</span>
                   <span className="flex items-center gap-1">
@@ -286,12 +284,21 @@ const StudentMaterialsList = () => {
                     {material.estimatedStudyTime} min
                   </span>
                 </div>
-                
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-500">File Size:</span>
                   <span>{formatFileSize(material.fileSize)}</span>
                 </div>
               </div>
+              {/* Inline Preview Button for PDFs/images */}
+              {['.pdf', '.png', '.jpg', '.jpeg'].includes(material.fileType) && (
+                <Link
+                  to={`/student/materials/${material._id}/preview`}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm mb-2"
+                >
+                  <Eye size={14} />
+                  Preview Inline
+                </Link>
+              )}
 
               {material.keywords && material.keywords.length > 0 && (
                 <div className="mb-4">

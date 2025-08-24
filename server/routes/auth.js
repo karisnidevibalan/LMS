@@ -95,4 +95,19 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Get current authenticated user
+const authMiddleware = require('../middleware/authMiddleware');
+router.get('/me', authMiddleware(['student', 'teacher', 'admin']), (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+  res.json({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role
+    // Add other fields as needed
+  });
+});
+
 module.exports = router;

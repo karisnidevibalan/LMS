@@ -17,6 +17,7 @@ import RateCourse from './pages/RateCourse';
 import StudentDashboard from './pages/student/StudentDashboard';
 import EnrolledCourses from './pages/student/EnrolledCourses';
 import StudentProgress from './pages/student/StudentProgress';
+import MaterialPreview from './pages/student/MaterialPreview';
 
 import LectureList from './components/Lectures/LectureList.jsx';
 import LectureView from './components/Lectures/LectureView.jsx';
@@ -154,6 +155,7 @@ const RoutesComponent = () => (
         </RoleProtectedRoute>
       }
     />
+    <Route path="/student/materials/:materialId/preview" element={<MaterialPreview />} />
 
     {/* Lectures */}
     <Route path="/lectures" element={<LectureList />} />

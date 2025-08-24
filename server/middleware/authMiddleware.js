@@ -7,18 +7,17 @@ const authenticate = async (req, res, next) => {
   try {
     console.log('Base authenticate function called');
     
-    // Get authorization header
+    // Get authorization header or token from query param
+    let token;
     const authHeader = req.headers?.authorization;
-    if (!authHeader) {
-      console.log('No authorization header found');
-      return res.status(401).json({ error: "Missing authorization header" });
+    if (authHeader) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query && req.query.token) {
+      token = req.query.token;
     }
-
-    // Extract token
-    const token = authHeader.split(' ')[1];
     if (!token) {
-      console.log('No token found in header');
-      return res.status(401).json({ error: 'No token found' });
+      console.log('No token found in header or query');
+      return res.status(401).json({ error: 'Missing authorization header or token' });
     }
 
     console.log('Token found, verifying...');

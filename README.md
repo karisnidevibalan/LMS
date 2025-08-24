@@ -63,7 +63,29 @@ A full-stack Learning Management System built with React, Node.js, Express, and 
    ```bash
    cd client
    npm run dev
-   ```
+   ```   const express = require('express');
+   const router = express.Router();
+   const authMiddleware = require('../middleware/authMiddleware');
+   
+   // GET /api/auth/me - Get current authenticated user
+   router.get('/me', authMiddleware(['student', 'teacher', 'admin']), (req, res) => {
+     // Only return safe user info
+     if (!req.user) {
+       return res.status(401).json({ error: 'Not authenticated' });
+     }
+     res.json({
+       _id: req.user._id,
+       name: req.user.name,
+       email: req.user.email,
+       role: req.user.role
+       // Add other fields as needed
+     });
+   });
+   
+   module.exports = router;   const express = require('express');
+   // ...other requires...
+   const router = express.Router();
+   // ...all router.get/post/put/delete calls below this line...
 
 The application will be available at:
 - Client: http://localhost:5173

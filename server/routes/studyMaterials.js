@@ -8,6 +8,47 @@ const StudyMaterial = require('../models/StudyMaterial');
 const { extractKeywordsFromFile, enhanceKeywords } = require('../utils/keywordExtractor');
 const router = express.Router();
 
+// Inline view study material file (PDF/image) for enrolled students + teacher
+router.get('/view/:materialId', authMiddleware(['student', 'teacher']), async (req, res) => {
+  try {
+    const { materialId } = req.params;
+    const material = await StudyMaterial.findById(materialId).populate('courseId');
+    if (!material) {
+      return res.status(404).json({ error: 'Study material not found' });
+    }
+    // Check access permissions
+    const course = material.courseId;
+    const isTeacher = course.teacherId.toString() === req.user._id.toString();
+    const isEnrolled = course.enrolledStudents.map(id => id.toString()).includes(req.user._id.toString());
+    if (!isTeacher && !isEnrolled) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    // Check if file exists
+    if (!fs.existsSync(material.filePath)) {
+      return res.status(404).json({ error: 'File not found on server' });
+    }
+    // Get MIME type based on file extension
+    const getContentType = (fileName) => {
+      const ext = path.extname(fileName).toLowerCase();
+      const mimeTypes = {
+        '.pdf': 'application/pdf',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg'
+      };
+      return mimeTypes[ext] || 'application/octet-stream';
+    };
+    const contentType = getContentType(material.fileName);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${material.fileName}"`);
+    const fileStream = fs.createReadStream(material.filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error viewing file:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -111,30 +152,35 @@ router.post('/upload/:courseId', authMiddleware(['teacher']), upload.single('fil
 // Get all study materials for a course (enrolled students + teacher)
 router.get('/course/:courseId', authMiddleware(['student', 'teacher']), async (req, res) => {
   try {
+const openai = require('../config/openai');
+const { getAIContent } = require('../utils/keywordExtractor');
     const { courseId } = req.params;
-
+    // Debug: Log user info
+    console.log('StudyMaterials GET: req.user:', req.user);
     // Check if user is enrolled or is the teacher with optimized query
     const course = await Course.findById(courseId).select('teacherId enrolledStudents').lean();
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-
-    const isTeacher = course.teacherId.toString() === req.user._id.toString();
-    const isEnrolled = course.enrolledStudents.includes(req.user._id);
-
+    // Debug: Log course info
+    console.log('StudyMaterials GET: course:', course);
+    // Compare IDs as strings for reliability
+    const userIdStr = req.user._id?.toString();
+    const teacherIdStr = course.teacherId?.toString();
+    const enrolledIds = (course.enrolledStudents || []).map(id => id.toString());
+    const isTeacher = teacherIdStr === userIdStr;
+    const isEnrolled = enrolledIds.includes(userIdStr);
+    console.log('StudyMaterials GET: isTeacher:', isTeacher, 'isEnrolled:', isEnrolled);
     if (!isTeacher && !isEnrolled) {
       return res.status(403).json({ error: 'You must be enrolled in this course to access materials' });
     }
-
     // Optimized query with lean() for better performance
     const materials = await StudyMaterial.find({ courseId })
       .populate('teacherId', 'name email')
       .select('-filePath') // Don't expose file path for security
       .sort({ chapter: 1, uploadDate: 1 })
       .lean();
-
     res.json(materials);
-
   } catch (error) {
     console.error('Error fetching study materials:', error);
     res.status(500).json({ error: error.message });
