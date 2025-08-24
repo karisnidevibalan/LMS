@@ -1,0 +1,75 @@
+/* index.css or AuthForm.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #6366f1, #a855f7);
+  color: #333;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.auth-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.auth-form h2 {
+  text-align: center;
+  color: #4f46e5;
+  margin-bottom: 1rem;
+}
+
+.auth-form input,
+.auth-form select {
+  padding: 0.7rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s ease;
+}
+
+.auth-form input:focus,
+.auth-form select:focus {
+  border-color: #6366f1;
+}
+
+.auth-form button {
+  padding: 0.8rem;
+  background-color: #6366f1;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.auth-form button:hover {
+  background-color: #4f46e5;
+  transform: scale(1.02);
+}
+
+.auth-form p {
+  text-align: center;
+  color: #4f46e5;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+.auth-form p:hover {
+  text-decoration: underline;
+}

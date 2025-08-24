@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Learning Management System (LMS)
 
 A full-stack Learning Management System built with React, Node.js, Express, and MongoDB.
@@ -108,3 +109,21 @@ LMS_PROJECT/
 - **Authentication**: JWT, bcrypt
 - **AI Integration**: OpenAI API
 - **Development**: ESLint, PostCSS
+=======
+<<<<<<< HEAD
+# React + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+=======
+# LMS
+>>>>>>> 4ce28e3fa43ab6f22872ec249ebb50255b345593
+>>>>>>> 707a91c59ba987ba028eb1e4e1677f7e1bc3de02
