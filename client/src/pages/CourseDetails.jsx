@@ -158,6 +158,15 @@ const CourseDetails = () => {
       <div className="max-w-3xl mx-auto bg-white dark:bg-[#2d2a4a] p-6 rounded-xl shadow">
         <h1 className="text-3xl font-bold text-purple-700 dark:text-purple-200 mb-4">{course.title}</h1>
         <p className="text-gray-700 dark:text-gray-300 mb-4">{course.description}</p>
+        <div className="mb-8 flex justify-center">
+          <Link
+            to={`/course/${id}/rate`}
+            className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-extrabold px-8 py-4 rounded-2xl shadow-lg border-4 border-yellow-400 text-2xl transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-yellow-300"
+            style={{filter: 'drop-shadow(0 0 8px #fbbf24)', zIndex: 10}}
+          >
+            ⭐ Rate This Course
+          </Link>
+        </div>
 
         <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           <p><strong>Category:</strong> {course.category || 'General'}</p>

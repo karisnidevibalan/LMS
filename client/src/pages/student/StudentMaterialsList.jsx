@@ -260,45 +260,51 @@ const StudentMaterialsList = () => {
                 </div>
               </div>
 
-              {material.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                  {material.description}
-                </p>
-              )}
+              <p className="text-sm text-gray-900 dark:text-white mb-3" style={{background:'#f3f4f6', padding:'6px', borderRadius:'6px'}}>
+                {material.description || 'No description provided.'}
+              </p>
 
               <div className="space-y-2 mb-4">
+                {/* Improved field visibility */}
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Chapter:</span>
-                  <span className="font-medium">{material.chapter || 'General'}</span>
+                  <span className="text-gray-700 dark:text-gray-200 font-semibold">Chapter:</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{material.chapter || 'General'}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Difficulty:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(material.difficulty)}`}>
-                    {material.difficulty}
-                  </span>
+                  <span className="text-gray-700 dark:text-gray-200 font-semibold">Difficulty:</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(material.difficulty)} text-white`}>{material.difficulty}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Study Time:</span>
-                  <span className="flex items-center gap-1">
+                  <span className="text-gray-700 dark:text-gray-200 font-semibold">Study Time:</span>
+                  <span className="flex items-center gap-1 text-gray-900 dark:text-white">
                     <Clock size={12} />
                     {material.estimatedStudyTime} min
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">File Size:</span>
-                  <span>{formatFileSize(material.fileSize)}</span>
+                  <span className="text-gray-700 dark:text-gray-200 font-semibold">File Size:</span>
+                  <span className="text-gray-900 dark:text-white">{formatFileSize(material.fileSize)}</span>
                 </div>
               </div>
-              {/* Inline Preview Button for PDFs/images */}
-              {['.pdf', '.png', '.jpg', '.jpeg'].includes(material.fileType) && (
-                <Link
-                  to={`/student/materials/${material._id}/preview`}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm mb-2"
-                >
-                  <Eye size={14} />
-                  Preview Inline
-                </Link>
-              )}
+              {/* Inline Preview Button for PDFs/images - fallback to file extension if fileType missing */}
+              {(() => {
+                const previewableExts = ['.pdf', '.png', '.jpg', '.jpeg'];
+                const fileType = material.fileType || '';
+                const fileName = material.fileName || '';
+                const ext = fileType.startsWith('.') ? fileType : ('.' + (fileName.split('.').pop() || '')).toLowerCase();
+                if (previewableExts.includes(ext)) {
+                  return (
+                    <Link
+                      to={`/student/materials/${material._id}/preview`}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm mb-2"
+                    >
+                      <Eye size={14} />
+                      Preview Inline
+                    </Link>
+                  );
+                }
+                return null;
+              })()}
 
               {material.keywords && material.keywords.length > 0 && (
                 <div className="mb-4">
@@ -350,6 +356,15 @@ const StudentMaterialsList = () => {
                 >
                   <BookOpen size={14} />
                   Start Studying
+                </Link>
+
+                {/* Make Rate this Course button visible and enabled */}
+                <Link
+                  to={`/course/${courseId}/rate`}
+                  className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold px-4 py-2 rounded-md transition-colors flex items-center justify-center gap-2 text-sm border-2 border-yellow-400 shadow focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                  style={{marginTop: '8px'}}
+                >
+                  ⭐ Rate this Course
                 </Link>
               </div>
             </div>
