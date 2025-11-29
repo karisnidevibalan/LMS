@@ -55,12 +55,25 @@ const extractKeywordsFromText = (text, maxKeywords = 20) => {
 // Extract text from PDF files
 const extractTextFromPDF = async (filePath) => {
   try {
+    console.log('📄 Reading PDF file:', filePath);
     const dataBuffer = fs.readFileSync(filePath);
+    console.log('📦 Buffer size:', dataBuffer.length, 'bytes');
+    
     const data = await pdf(dataBuffer);
+    console.log('✅ PDF parsed successfully');
+    console.log('📝 Extracted text length:', data.text?.length || 0, 'characters');
+    console.log('📄 Number of pages:', data.numpages);
+    
+    if (!data.text || data.text.trim().length === 0) {
+      console.warn('⚠️ PDF contains no extractable text (might be image-based)');
+      return '';
+    }
+    
+    console.log('📝 Text preview:', data.text.substring(0, 200));
     return data.text;
   } catch (error) {
-    console.error('Error extracting text from PDF:', error);
-    throw new Error('Failed to extract text from PDF');
+    console.error('❌ Error extracting text from PDF:', error);
+    throw new Error(`Failed to extract text from PDF: ${error.message}`);
   }
 };
 
@@ -91,6 +104,8 @@ const extractKeywordsFromFile = async (filePath, fileName, maxKeywords = 15) => 
     const ext = path.extname(fileName).toLowerCase();
     let text = '';
 
+    console.log(`🔍 Processing file: ${fileName} (${ext})`);
+
     switch (ext) {
       case '.pdf':
         text = await extractTextFromPDF(filePath);
@@ -104,18 +119,23 @@ const extractKeywordsFromFile = async (filePath, fileName, maxKeywords = 15) => 
         text = await extractTextFromTxt(filePath);
         break;
       default:
-        // For other file types, return empty array
+        console.log(`⚠️ Unsupported file type: ${ext}`);
         return [];
+    }
+
+    if (!text || text.trim().length === 0) {
+      console.warn('⚠️ No text extracted from file');
+      return [];
     }
 
     // Extract keywords from the text
     const keywords = extractKeywordsFromText(text, maxKeywords);
     
-    console.log(`Extracted ${keywords.length} keywords from ${fileName}`);
+    console.log(`✅ Extracted ${keywords.length} keywords from ${fileName}:`, keywords.slice(0, 5));
     return keywords;
 
   } catch (error) {
-    console.error('Error extracting keywords from file:', error);
+    console.error('❌ Error extracting keywords from file:', error);
     // Return empty array instead of throwing to not break upload
     return [];
   }

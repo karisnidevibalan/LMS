@@ -74,7 +74,7 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -87,6 +87,8 @@ exports.login = async (req, res) => {
     res.json({
       token,
       user: {
+        _id: user._id,
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -108,17 +110,65 @@ exports.getProfile = async (req, res) => {
     const user = req.user; // From auth middleware
     
     res.json({
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      instituteName: user.instituteName,
-      educationLevel: user.educationLevel,
-      careerDetails: user.careerDetails,
-      idProofUrl: user.idProofUrl,
+      user: {
+        _id: user._id,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        instituteName: user.instituteName,
+        educationLevel: user.educationLevel,
+        careerDetails: user.careerDetails,
+        idProofUrl: user.idProofUrl,
+        favoriteCharacter: user.favoriteCharacter,
+        studyPreferences: user.studyPreferences,
+        totalStudyTime: user.totalStudyTime,
+      }
     });
   } catch (err) {
     console.error('Profile Error:', err);
     res.status(500).json({ error: 'Failed to get profile', details: err.message });
+  }
+};
+
+// ✅ Update User Preferences (Character & Study Settings)
+exports.updatePreferences = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { favoriteCharacter, studyPreferences } = req.body;
+
+    // Validate character name if provided
+    const validCharacters = ['Professor Alex', 'Friendly Charlie', 'Wise Sage', 'Energy Eva', 'Calm Jordan'];
+    if (favoriteCharacter && !validCharacters.includes(favoriteCharacter)) {
+      return res.status(400).json({ error: 'Invalid character selection' });
+    }
+
+    // Build update object
+    const updateData = {};
+    if (favoriteCharacter) updateData.favoriteCharacter = favoriteCharacter;
+    if (studyPreferences) {
+      // Validate study preferences if provided
+      updateData.studyPreferences = {
+        voiceEnabled: studyPreferences.voiceEnabled !== undefined ? studyPreferences.voiceEnabled : true,
+        playbackSpeed: studyPreferences.playbackSpeed || 1,
+        preferredLanguage: studyPreferences.preferredLanguage || 'en-US',
+        darkMode: studyPreferences.darkMode !== undefined ? studyPreferences.darkMode : true,
+      };
+    }
+
+    const user = await User.findByIdAndUpdate(userId, updateData, { new: true });
+
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      user: {
+        _id: user._id,
+        favoriteCharacter: user.favoriteCharacter,
+        studyPreferences: user.studyPreferences,
+      }
+    });
+  } catch (err) {
+    console.error('Update Preferences Error:', err);
+    res.status(500).json({ error: 'Failed to update preferences', details: err.message });
   }
 };

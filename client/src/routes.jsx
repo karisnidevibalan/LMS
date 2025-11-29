@@ -1,4 +1,3 @@
-// routes.jsx
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
@@ -18,6 +17,7 @@ import StudentDashboard from './pages/student/StudentDashboard';
 import EnrolledCourses from './pages/student/EnrolledCourses';
 import StudentProgress from './pages/student/StudentProgress';
 import MaterialPreview from './pages/student/MaterialPreview';
+import CharacterSettings from './pages/CharacterSettings';
 
 import LectureList from './components/Lectures/LectureList.jsx';
 import LectureView from './components/Lectures/LectureView.jsx';
@@ -152,6 +152,14 @@ const RoutesComponent = () => (
       element={
         <RoleProtectedRoute allowedRole="student">
           <StudentProgress />
+        </RoleProtectedRoute>
+      }
+    />
+    <Route
+      path="/student/character-settings"
+      element={
+        <RoleProtectedRoute allowedRole="student">
+          <CharacterSettings />
         </RoleProtectedRoute>
       }
     />

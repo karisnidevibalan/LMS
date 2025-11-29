@@ -13,6 +13,7 @@ const CourseDetails = () => {
   const [error, setError] = useState(null);
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [studyMaterials, setStudyMaterials] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     const fetchCourseDetails = async () => {
@@ -35,32 +36,33 @@ const CourseDetails = () => {
         const courseResponse = responses[0];
         setCourse(courseResponse.data);
         // Always refresh user object from backend if token exists
-        let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        let user = JSON.parse(localStorage.getItem('user') || '{}');
         if (token) {
           try {
             const userResponse = await cachedGet('/auth/me', 'user', 2 * 60 * 1000, {
               headers: { Authorization: `Bearer ${token}` }
             });
-            currentUser = userResponse.data;
-            localStorage.setItem('user', JSON.stringify(currentUser));
+            user = userResponse.data;
+            localStorage.setItem('user', JSON.stringify(user));
           } catch (userError) {
             console.warn('Could not fetch user from backend:', userError);
           }
         }
+        setCurrentUser(user);
         if (token && responses[1]) {
           const enrolledResponse = responses[1];
           const enrolledCourses = enrolledResponse.data;
           const alreadyEnrolled = enrolledCourses.some(enrolledCourse => enrolledCourse._id === id);
           setIsEnrolled(alreadyEnrolled);
           // Check if user is teacher of this course
-          const isTeacher = currentUser.role === 'teacher' && 
-                           (courseResponse.data.teacherId === currentUser._id || 
-                            courseResponse.data.teacherId?.toString() === currentUser._id);
+          const isTeacher = user.role === 'teacher' && 
+                           (courseResponse.data.teacherId === user._id || 
+                            courseResponse.data.teacherId?.toString() === user._id);
           console.log('Enrollment check:', {
             alreadyEnrolled,
             isTeacher,
-            currentUserRole: currentUser.role,
-            currentUserId: currentUser._id,
+            currentUserRole: user.role,
+            currentUserId: user._id,
             courseTeacherId: courseResponse.data.teacherId,
             shouldFetchMaterials: alreadyEnrolled || isTeacher
           });
@@ -257,6 +259,10 @@ const CourseDetails = () => {
                   Study Materials
                 </Link>
               </div>
+            </div>
+          ) : currentUser?.role === 'teacher' ? (
+            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded text-center">
+              👨‍🏫 You are the instructor of this course
             </div>
           ) : (
             <button

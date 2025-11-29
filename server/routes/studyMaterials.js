@@ -416,4 +416,60 @@ router.delete('/:materialId', authMiddleware(['teacher']), async (req, res) => {
   }
 });
 
+// Get a single study material by ID (for viewing metadata)
+router.get('/:materialId', authMiddleware(['student', 'teacher']), async (req, res) => {
+  try {
+    const { materialId } = req.params;
+    // Fetch material with course populated
+    const material = await StudyMaterial.findById(materialId)
+      .populate('courseId', 'teacherId enrolledStudents');
+    
+    if (!material) {
+      return res.status(404).json({ error: 'Study material not found' });
+    }
+
+    // Check access permissions
+    const course = material.courseId;
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const userIdStr = req.user._id?.toString();
+    const teacherIdStr = course.teacherId?.toString();
+    const isTeacher = teacherIdStr === userIdStr;
+    
+    // Handle enrolledStudents safely
+    let isEnrolled = false;
+    try {
+      const enrolledIds = (course.enrolledStudents || []).map(id => id?.toString());
+      isEnrolled = enrolledIds.includes(userIdStr);
+    } catch (e) {
+      console.error('Error checking enrollment:', e);
+    }
+    
+    if (!isTeacher && !isEnrolled) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    // Create a safe response object without filePath
+    res.json({
+      _id: material._id,
+      title: material.title,
+      description: material.description,
+      chapter: material.chapter,
+      difficulty: material.difficulty,
+      estimatedStudyTime: material.estimatedStudyTime,
+      fileName: material.fileName,
+      fileType: material.fileType,
+      uploadDate: material.uploadDate,
+      courseId: material.courseId._id,
+      teacherId: material.teacherId,
+      keywords: material.keywords
+    });
+  } catch (error) {
+    console.error('Error fetching study material:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

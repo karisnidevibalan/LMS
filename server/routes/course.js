@@ -44,12 +44,21 @@ router.get('/my-courses', verifyToken(['teacher']), async (req, res) => {
   }
 });
 
-// GET /api/course/enrolled - Get student's enrolled courses
-router.get('/enrolled', verifyToken(['student']), async (req, res) => {
+// GET /api/course/enrolled - Get student's enrolled courses OR teacher's created courses
+router.get('/enrolled', verifyToken(['student', 'teacher']), async (req, res) => {
   try {
-    const courses = await Course.find({ enrolledStudents: req.user._id })
-      .populate('teacherId', 'name email')
-      .select('-lessons.content');
+    let courses;
+    if (req.user.role === 'student') {
+      // Students see courses they're enrolled in
+      courses = await Course.find({ enrolledStudents: req.user._id })
+        .populate('teacherId', 'name email')
+        .select('-lessons.content');
+    } else if (req.user.role === 'teacher') {
+      // Teachers see courses they've created
+      courses = await Course.find({ teacherId: req.user._id })
+        .populate('teacherId', 'name email')
+        .select('-lessons.content');
+    }
     res.json(courses);
   } catch (err) {
     console.error('Error fetching enrolled courses:', err);
@@ -71,6 +80,28 @@ router.get('/:id', async (req, res) => {
   } catch (err) {
     console.error('❌ Failed to fetch course:', err.message);
     res.status(500).json({ error: 'Failed to fetch course' });
+  }
+});
+
+// GET /api/course/:id/students - Get enrolled students for a course (teacher only)
+router.get('/:id/students', verifyToken(['teacher']), async (req, res) => {
+  try {
+    const courseId = req.params.id;
+    const course = await Course.findById(courseId).populate('enrolledStudents', 'name email role');
+    
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Only allow teacher of the course to view students
+    if (course.teacherId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    res.json(course.enrolledStudents);
+  } catch (err) {
+    console.error('Error fetching enrolled students:', err);
+    res.status(500).json({ error: 'Failed to fetch enrolled students' });
   }
 });
 
@@ -108,7 +139,7 @@ router.put('/:id', verifyToken(['teacher']), async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    if (!course.teacherId.equals(req.user.id)) {
+    if (!course.teacherId.equals(req.user._id)) {
       return res.status(403).json({ error: 'Only the course teacher can update this course' });
     }
 
@@ -131,7 +162,7 @@ router.delete('/:id', verifyToken(['teacher']), async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    if (!course.teacherId.equals(req.user.id)) {
+    if (!course.teacherId.equals(req.user._id)) {
       return res.status(403).json({ error: 'Only the course teacher can delete this course' });
     }
 
@@ -146,14 +177,15 @@ router.delete('/:id', verifyToken(['teacher']), async (req, res) => {
 // POST /api/course/:id/enroll - Enroll in a course (student only)
 router.post('/:id/enroll', verifyToken(['student']), async (req, res) => {
   try {
-    if (req.user.role !== 'student') {
-      return res.status(403).json({ error: 'Only students can enroll in courses' });
+    // Teachers cannot enroll in courses
+    if (req.user.role === 'teacher') {
+      return res.status(403).json({ error: 'Teachers cannot enroll in courses' });
     }
 
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    await course.enrollStudent(req.user.id);
+    await course.enrollStudent(req.user._id);
     res.json({ message: 'Successfully enrolled in course' });
   } catch (err) {
     console.error('❌ Failed to enroll:', err.message);
@@ -167,7 +199,7 @@ router.delete('/:id/enroll', verifyToken(['student']), async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    await course.unenrollStudent(req.user.id);
+    await course.unenrollStudent(req.user._id);
     res.json({ message: 'Successfully unenrolled from course' });
   } catch (err) {
     console.error('❌ Failed to unenroll:', err.message);
@@ -187,11 +219,11 @@ router.post('/:id/rate', verifyToken(['student']), async (req, res) => {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ error: 'Course not found' });
 
-    if (!course.isUserEnrolled(req.user.id)) {
+    if (!course.isUserEnrolled(req.user._id)) {
       return res.status(403).json({ error: 'You must be enrolled to rate this course' });
     }
 
-    await course.addRating(req.user.id, rating, comment);
+    await course.addRating(req.user._id, rating, comment);
     res.json({ message: 'Rating added successfully' });
   } catch (err) {
     console.error('❌ Failed to add rating:', err.message);

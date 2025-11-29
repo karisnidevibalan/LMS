@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Clock, Download, BookOpen, Headphones, Video, FileText, Globe, Zap, Target, Star } from 'lucide-react';
+import { Clock, Download, BookOpen, Headphones, Video, FileText, Globe, Zap, Target, Star, Volume2, Settings } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api, { cachedGet, apiPost } from '../utils/api';
+import VoicePlayer from '../components/VoicePlayer';
+import axios from 'axios';
 
 const AdaptiveStudyInterface = () => {
   const { courseId, materialId } = useParams();
@@ -15,6 +17,14 @@ const AdaptiveStudyInterface = () => {
   const [adaptiveContent, setAdaptiveContent] = useState(null);
   const [generatingContent, setGeneratingContent] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('en');
+  
+  // Voice narration state
+  const [user, setUser] = useState(null);
+  const [selectedCharacter, setSelectedCharacter] = useState('Professor Alex');
+  const [narrationUrl, setNarrationUrl] = useState(null);
+  const [generatingNarration, setGeneratingNarration] = useState(false);
+  const [showNarrationPanel, setShowNarrationPanel] = useState(false);
+  const [narrationText, setNarrationText] = useState('');
 
   const studyModes = {
     quick: {
@@ -56,6 +66,17 @@ const AdaptiveStudyInterface = () => {
   const fetchMaterial = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
+      
+      // Fetch user profile to get preferred character
+      const userResponse = await axios.get('http://localhost:5000/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (userResponse.data.user?.favoriteCharacter) {
+        setSelectedCharacter(userResponse.data.user.favoriteCharacter);
+      }
+      setUser(userResponse.data.user);
+      
+      // Fetch study material
       const response = await cachedGet(`/study-materials/${materialId}`, 'study-materials', 3 * 60 * 1000, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -73,12 +94,81 @@ const AdaptiveStudyInterface = () => {
     fetchMaterial();
   }, [fetchMaterial]);
 
+  const generateNarration = async (textToNarrate) => {
+    setGeneratingNarration(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      // Validate text
+      if (!textToNarrate || textToNarrate.trim().length === 0) {
+        toast.error('No text to narrate');
+        return;
+      }
+      
+      // Limit text to 4000 characters for API
+      const limitedText = textToNarrate.substring(0, 4000);
+      
+      console.log('Narration request:', {
+        textLength: limitedText.length,
+        character: selectedCharacter,
+        textPreview: limitedText.substring(0, 100)
+      });
+      
+      const response = await axios.post(
+        'http://localhost:5000/api/openai/character-narration',
+        {
+          text: limitedText,
+          character: selectedCharacter,
+          language: 'en-US'
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      
+      setNarrationUrl(response.data.audioUrl);
+      setShowNarrationPanel(true);
+      toast.success(`${selectedCharacter} is ready to narrate!`);
+    } catch (error) {
+      console.error('Error generating narration:', error);
+      console.error('Error response:', error.response?.data);
+      toast.error(error.response?.data?.error || 'Failed to generate narration. Please try again.');
+    } finally {
+      setGeneratingNarration(false);
+    }
+  };
+
+  const handleGenerateContentNarration = async () => {
+    if (!adaptiveContent?.content) {
+      toast.error('Please generate adaptive content first');
+      return;
+    }
+    
+    // Extract plain text from HTML
+    const div = document.createElement('div');
+    div.innerHTML = adaptiveContent.content;
+    const plainText = div.textContent || div.innerText || '';
+    
+    setNarrationText(plainText);
+    await generateNarration(plainText);
+  };
+
+  const handleGenerateMaterialNarration = async () => {
+    if (!material?.description) {
+      toast.error('No material description to narrate');
+      return;
+    }
+    
+    setNarrationText(material.description);
+    await generateNarration(material.description);
+  };
+
   const generateAdaptiveContent = async () => {
     setGeneratingContent(true);
     try {
       const token = localStorage.getItem('token');
       const response = await apiPost(
-        `/study-materials/generate-content/${materialId}`,
+        `/study-materials/ai-content/${materialId}`,
         {
           studyMode,
           timeConstraint: availableTime,
@@ -155,6 +245,7 @@ const AdaptiveStudyInterface = () => {
   };
 
   const getFileIcon = (fileType) => {
+    if (!fileType) return <BookOpen className="text-gray-500" size={24} />;
     const type = fileType.toLowerCase();
     if (type.includes('.pdf') || type.includes('.doc')) return <FileText className="text-red-500" size={24} />;
     if (type.includes('.mp4') || type.includes('.avi')) return <Video className="text-blue-500" size={24} />;
@@ -317,36 +408,105 @@ const AdaptiveStudyInterface = () => {
           </button>
 
           <button
+            onClick={handleGenerateMaterialNarration}
+            disabled={generatingNarration}
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+            title="Generate narration with your selected character"
+          >
+            {generatingNarration ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Narrating...
+              </>
+            ) : (
+              <>
+                <Headphones size={20} />
+                Narrate with {selectedCharacter}
+              </>
+            )}
+          </button>
+
+          <button
             onClick={downloadOriginalFile}
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
           >
             <Download size={20} />
             Download Original
           </button>
+
+          <button
+            onClick={() => navigate('/student/character-settings')}
+            className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-3 rounded-lg transition-colors flex items-center gap-2"
+            title="Change your study guide character"
+          >
+            <Settings size={20} />
+          </button>
         </div>
       </div>
 
+      {/* Voice Player Panel */}
+      {showNarrationPanel && narrationUrl && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg shadow-md p-6 mb-8 border border-purple-200 dark:border-purple-800">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+              <Volume2 size={20} className="text-purple-600" />
+              Study Guide Narration
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Listen to the material being narrated by your selected study guide
+            </p>
+          </div>
+          <VoicePlayer
+            audioUrl={narrationUrl}
+            character={selectedCharacter}
+            onEnded={() => {
+              toast.success('Narration complete!');
+            }}
+          />
+        </div>
+      )}
+
       {/* Adaptive Content Display */}
       {adaptiveContent && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
               Adaptive Study Content
             </h2>
             
-            <div className="flex items-center gap-2">
-              <Globe size={16} className="text-gray-500" />
-              <select
-                value={selectedLanguage}
-                onChange={(e) => translateContent(e.target.value)}
-                className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+            <div className="flex gap-4">
+              <button
+                onClick={handleGenerateContentNarration}
+                disabled={generatingNarration}
+                className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm"
               >
-                {languages.map((lang) => (
-                  <option key={lang.code} value={lang.code}>
-                    {lang.flag} {lang.name}
-                  </option>
-                ))}
-              </select>
+                {generatingNarration ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Narrating...
+                  </>
+                ) : (
+                  <>
+                    <Headphones size={16} />
+                    Narrate Content
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <Globe size={16} className="text-gray-500" />
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => translateContent(e.target.value)}
+                  className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
+                >
+                  {languages.map((lang) => (
+                    <option key={lang.code} value={lang.code}>
+                      {lang.flag} {lang.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -388,8 +548,23 @@ const AdaptiveStudyInterface = () => {
         </div>
       )}
 
+      {/* Original Content Section - when no adaptive content */}
+      {!adaptiveContent && material && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            Material Overview
+          </h2>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+            {material.description}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Click "Generate Study Content" to create personalized study material based on your selected study mode and available time.
+          </p>
+        </div>
+      )}
+
       {/* Keywords from Original Material */}
-      {material.keywords && material.keywords.length > 0 && (
+      {material?.keywords && material.keywords.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mt-8">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
             Original Material Keywords

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, Users, Star, TrendingUp, Calendar, Clock, ArrowRight, Award, Target, Zap } from 'lucide-react';
+import { BookOpen, Users, Star, TrendingUp, Clock, ArrowRight, Zap } from 'lucide-react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -42,7 +42,7 @@ const StudentDashboard = () => {
 
         setStats({
           totalEnrolled: coursesResponse.data.length,
-          studyStreak: 5, // Placeholder - implement actual calculation
+          studyStreak: 5,
           recentActivity: coursesResponse.data.filter(course => {
             const enrollDate = new Date(course.createdAt || Date.now());
             const weekAgo = new Date();
@@ -50,7 +50,7 @@ const StudentDashboard = () => {
             return enrollDate > weekAgo;
           }).length,
           averageRating: avgRating,
-          totalStudyHours: (coursesResponse.data.length * 15).toFixed(1) // Placeholder
+          totalStudyHours: (coursesResponse.data.length * 15).toFixed(1)
         });
 
       } catch (error) {
@@ -229,7 +229,7 @@ const StudentDashboard = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {enrolledCourses.slice(0, 6).map((course, index) => (
+              {enrolledCourses.slice(0, 6).map((course) => (
                 <motion.div
                   key={course._id}
                   variants={itemVariants}
