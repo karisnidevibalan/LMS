@@ -157,7 +157,8 @@ const StudentDashboard = () => {
             <motion.div
               key={index}
               variants={itemVariants}
-              className="bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-4"
+              className="bg-white dark:bg-slate-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-4 cursor-pointer"
+              onClick={() => { if (index === 4) window.location.href = '/student/analytics'; }}
             >
               <div className={`${stat.lightBg} w-12 h-12 rounded-lg flex items-center justify-center mb-3`}>
                 <div className={`bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
@@ -166,6 +167,9 @@ const StudentDashboard = () => {
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{stat.label}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+              {index === 4 && (
+                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">View Analytics →</p>
+              )}
             </motion.div>
           ))}
         </motion.div>

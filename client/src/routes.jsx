@@ -18,6 +18,7 @@ import EnrolledCourses from './pages/student/EnrolledCourses';
 import StudentProgress from './pages/student/StudentProgress';
 import MaterialPreview from './pages/student/MaterialPreview';
 import CharacterSettings from './pages/CharacterSettings';
+import StudentAnalytics from './pages/student/StudentAnalytics';
 
 import LectureList from './components/Lectures/LectureList.jsx';
 import LectureView from './components/Lectures/LectureView.jsx';
@@ -160,6 +161,14 @@ const RoutesComponent = () => (
       element={
         <RoleProtectedRoute allowedRole="student">
           <CharacterSettings />
+        </RoleProtectedRoute>
+      }
+    />
+    <Route
+      path="/student/analytics"
+      element={
+        <RoleProtectedRoute allowedRole="student">
+          <StudentAnalytics />
         </RoleProtectedRoute>
       }
     />

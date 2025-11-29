@@ -25,6 +25,11 @@ const AdaptiveStudyInterface = () => {
   const [generatingNarration, setGeneratingNarration] = useState(false);
   const [showNarrationPanel, setShowNarrationPanel] = useState(false);
   const [narrationText, setNarrationText] = useState('');
+  
+  // Session tracking state
+  const [sessionId, setSessionId] = useState(null);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [usedNarration, setUsedNarration] = useState(false);
 
   const studyModes = {
     quick: {
@@ -92,7 +97,62 @@ const AdaptiveStudyInterface = () => {
 
   useEffect(() => {
     fetchMaterial();
+    startStudySession();
+    
+    // Cleanup: Save session data on unmount
+    return () => {
+      if (sessionId) {
+        endStudySession();
+      }
+    };
   }, [fetchMaterial]);
+  
+  const startStudySession = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'http://localhost:5000/api/analytics/session/start',
+        {
+          materialId,
+          courseId,
+          studyMode,
+          availableTime,
+          characterUsed: selectedCharacter,
+          language: selectedLanguage
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      setSessionId(response.data.sessionId);
+      setSessionStartTime(Date.now());
+    } catch (error) {
+      console.error('Error starting session:', error);
+    }
+  };
+  
+  const endStudySession = async () => {
+    if (!sessionId || !sessionStartTime) return;
+    
+    try {
+      const token = localStorage.getItem('token');
+      const timeSpent = Math.floor((Date.now() - sessionStartTime) / 60000); // minutes
+      
+      await axios.put(
+        `http://localhost:5000/api/analytics/session/${sessionId}`,
+        {
+          timeSpent,
+          completionPercentage: adaptiveContent ? 100 : 50,
+          usedVoiceNarration: usedNarration
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+    } catch (error) {
+      console.error('Error ending session:', error);
+    }
+  };
 
   const generateNarration = async (textToNarrate) => {
     setGeneratingNarration(true);
@@ -128,6 +188,7 @@ const AdaptiveStudyInterface = () => {
       
       setNarrationUrl(response.data.audioUrl);
       setShowNarrationPanel(true);
+      setUsedNarration(true); // Track narration usage
       toast.success(`${selectedCharacter} is ready to narrate!`);
     } catch (error) {
       console.error('Error generating narration:', error);

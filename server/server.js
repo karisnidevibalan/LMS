@@ -43,12 +43,14 @@ const openaiRoutes = require('./routes/openai');
 const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/course'); // Use the main course.js file
 const studyMaterialRoutes = require('./routes/studyMaterials');
+const analyticsRoutes = require('./routes/analytics');
 
 // Mount routes
 app.use('/api/openai', openaiRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/study-materials', studyMaterialRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check route
 app.get('/health', (req, res) => {
