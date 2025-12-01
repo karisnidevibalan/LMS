@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, X, BookOpen, Users, Star, User, LogOut } from 'lucide-react';
+import { Moon, Sun, Menu, X, BookOpen, Users, Star, User, LogOut, BarChart3, FileText, GraduationCap, Home } from 'lucide-react';
 import axios from 'axios';
 
 const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
@@ -50,6 +50,17 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
           <div className="hidden md:flex items-center space-x-6">
             {user ? (
               <>
+                {/* Home Link */}
+                <Link
+                  to="/"
+                  className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                    isActive('/') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                  }`}
+                >
+                  <Home size={18} />
+                  <span>Home</span>
+                </Link>
+
                 {/* Common Links */}
                 <Link
                   to="/courses"
@@ -58,7 +69,7 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                   }`}
                 >
                   <BookOpen size={18} />
-                  <span>All Courses</span>
+                  <span>Courses</span>
                 </Link>
 
                 {/* Student Links */}
@@ -70,7 +81,7 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                         isActive('/student/enrolled') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
                       }`}
                     >
-                      <Users size={18} />
+                      <GraduationCap size={18} />
                       <span>My Courses</span>
                     </Link>
                     <Link
@@ -82,21 +93,21 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                       <User size={18} />
                       <span>Dashboard</span>
                     </Link>
+                    <Link
+                      to="/student/analytics"
+                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                        isActive('/student/analytics') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                      }`}
+                    >
+                      <BarChart3 size={18} />
+                      <span>Analytics</span>
+                    </Link>
                   </>
                 )}
 
                 {/* Teacher Links */}
                 {user.role === 'teacher' && (
                   <>
-                    <Link
-                      to="/teacher/students"
-                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
-                        isActive('/teacher/students') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
-                      }`}
-                    >
-                      <Users size={18} />
-                      <span>My Students</span>
-                    </Link>
                     <Link
                       to="/teacher"
                       className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
@@ -105,6 +116,24 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                     >
                       <User size={18} />
                       <span>Dashboard</span>
+                    </Link>
+                    <Link
+                      to="/teacher/courses"
+                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                        isActive('/teacher/courses') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                      }`}
+                    >
+                      <BookOpen size={18} />
+                      <span>My Courses</span>
+                    </Link>
+                    <Link
+                      to="/teacher/students"
+                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                        isActive('/teacher/students') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                      }`}
+                    >
+                      <Users size={18} />
+                      <span>Students</span>
                     </Link>
                   </>
                 )}
@@ -125,6 +154,14 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
               </>
             ) : (
               <>
+                <Link
+                  to="/"
+                  className={`hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                    isActive('/') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                  }`}
+                >
+                  Home
+                </Link>
                 <Link
                   to="/courses"
                   className={`hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
@@ -191,6 +228,17 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                   </div>
                   
                   <Link
+                    to="/"
+                    className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                      isActive('/') ? 'bg-white/20 font-semibold' : ''
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Home size={18} />
+                    <span>Home</span>
+                  </Link>
+
+                  <Link
                     to="/courses"
                     className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
                       isActive('/courses') ? 'bg-white/20 font-semibold' : ''
@@ -204,16 +252,6 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                   {user.role === 'student' && (
                     <>
                       <Link
-                        to="/student/enrolled"
-                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
-                          isActive('/student/enrolled') ? 'bg-white/20 font-semibold' : ''
-                        }`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Users size={18} />
-                        <span>My Courses</span>
-                      </Link>
-                      <Link
                         to="/student"
                         className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
                           isActive('/student') ? 'bg-white/20 font-semibold' : ''
@@ -223,21 +261,31 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                         <User size={18} />
                         <span>Dashboard</span>
                       </Link>
+                      <Link
+                        to="/student/enrolled"
+                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                          isActive('/student/enrolled') ? 'bg-white/20 font-semibold' : ''
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <GraduationCap size={18} />
+                        <span>My Courses</span>
+                      </Link>
+                      <Link
+                        to="/student/analytics"
+                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                          isActive('/student/analytics') ? 'bg-white/20 font-semibold' : ''
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <BarChart3 size={18} />
+                        <span>Analytics</span>
+                      </Link>
                     </>
                   )}
 
                   {user.role === 'teacher' && (
                     <>
-                      <Link
-                        to="/teacher/students"
-                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
-                          isActive('/teacher/students') ? 'bg-white/20 font-semibold' : ''
-                        }`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Users size={18} />
-                        <span>My Students</span>
-                      </Link>
                       <Link
                         to="/teacher"
                         className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
@@ -247,6 +295,26 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                       >
                         <User size={18} />
                         <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        to="/teacher/courses"
+                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                          isActive('/teacher/courses') ? 'bg-white/20 font-semibold' : ''
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <BookOpen size={18} />
+                        <span>My Courses</span>
+                      </Link>
+                      <Link
+                        to="/teacher/students"
+                        className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                          isActive('/teacher/students') ? 'bg-white/20 font-semibold' : ''
+                        }`}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Users size={18} />
+                        <span>Students</span>
                       </Link>
                     </>
                   )}
@@ -265,31 +333,44 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
               ) : (
                 <>
                   <Link
+                    to="/"
+                    className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
+                      isActive('/') ? 'bg-white/20 font-semibold' : ''
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Home size={18} />
+                    <span>Home</span>
+                  </Link>
+                  <Link
                     to="/courses"
-                    className={`block p-2 rounded hover:bg-white/10 transition-colors ${
+                    className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
                       isActive('/courses') ? 'bg-white/20 font-semibold' : ''
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Courses
+                    <BookOpen size={18} />
+                    <span>Courses</span>
                   </Link>
                   <Link
                     to="/login"
-                    className={`block p-2 rounded hover:bg-white/10 transition-colors ${
+                    className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
                       isActive('/login') ? 'bg-white/20 font-semibold' : ''
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Login
+                    <User size={18} />
+                    <span>Login</span>
                   </Link>
                   <Link
                     to="/register"
-                    className={`block p-2 rounded hover:bg-white/10 transition-colors ${
+                    className={`flex items-center space-x-2 p-2 rounded hover:bg-white/10 transition-colors ${
                       isActive('/register') ? 'bg-white/20 font-semibold' : ''
                     }`}
                     onClick={() => setIsMenuOpen(false)}
                   >
-                    Register
+                    <Star size={18} />
+                    <span>Register</span>
                   </Link>
                 </>
               )}
