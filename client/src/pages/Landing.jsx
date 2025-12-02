@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -13,8 +14,7 @@ import axios from 'axios';
 
 const Landing = () => {
   const navigate = useNavigate();
-  const [activeFeature, setActiveFeature] = useState(0);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = React.useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
