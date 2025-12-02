@@ -1,5 +1,6 @@
 // pages/Home.jsx
 import React from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { BookOpen, Users, Award, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';

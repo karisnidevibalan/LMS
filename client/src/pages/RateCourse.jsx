@@ -1,11 +1,9 @@
 // src/components/pages/RateCourse.jsx
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { Star } from 'lucide-react';
 
 const RateCourse = () => {
-  const { id } = useParams();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [reviews, setReviews] = useState([

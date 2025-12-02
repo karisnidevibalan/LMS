@@ -19,12 +19,10 @@ const AdaptiveStudyInterface = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   
   // Voice narration state
-  const [user, setUser] = useState(null);
   const [selectedCharacter, setSelectedCharacter] = useState('Professor Alex');
   const [narrationUrl, setNarrationUrl] = useState(null);
   const [generatingNarration, setGeneratingNarration] = useState(false);
   const [showNarrationPanel, setShowNarrationPanel] = useState(false);
-  const [narrationText, setNarrationText] = useState('');
   
   // Session tracking state
   const [sessionId, setSessionId] = useState(null);

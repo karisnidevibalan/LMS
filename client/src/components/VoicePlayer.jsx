@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Play, Pause, Volume2, RotateCcw, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const VoicePlayer = ({ 
   audioUrl, 

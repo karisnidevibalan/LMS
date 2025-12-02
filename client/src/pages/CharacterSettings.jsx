@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CharacterSelector from '../components/CharacterSelector';
 import toast from 'react-hot-toast';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { Save, ArrowLeft } from 'lucide-react';
 

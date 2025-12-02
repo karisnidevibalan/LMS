@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Moon, Sun, Menu, X, LogOut, User } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 const Navbar = ({ toggleDarkMode, isDarkMode }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
