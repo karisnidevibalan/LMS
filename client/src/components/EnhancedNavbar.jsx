@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Moon, Sun, Menu, X, BookOpen, Users, Star, User, LogOut, BarChart3, FileText, GraduationCap, Home } from 'lucide-react';
+import { Moon, Sun, Menu, X, BookOpen, Users, Star, User, LogOut, BarChart3, FileText, GraduationCap, Home, LayoutDashboard } from 'lucide-react';
 import axios from 'axios';
 
 const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
@@ -18,9 +18,12 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
             headers: { Authorization: `Bearer ${token}` }
           });
           setUser(response.data);
+          // Update localStorage to keep it in sync
+          localStorage.setItem('user', JSON.stringify(response.data));
         } catch (error) {
           console.error('Error fetching user:', error);
           localStorage.removeItem('token');
+          localStorage.removeItem('user');
         }
       }
     };
@@ -72,6 +75,17 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                   <span>Courses</span>
                 </Link>
 
+                {/* Dashboard Link - Role-based */}
+                <Link
+                  to={user.role === 'student' ? '/student' : '/teacher'}
+                  className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                    isActive(user.role === 'student' ? '/student' : '/teacher') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                  }`}
+                >
+                  <LayoutDashboard size={18} />
+                  <span>Dashboard</span>
+                </Link>
+
                 {/* Student Links */}
                 {user.role === 'student' && (
                   <>
@@ -83,15 +97,6 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                     >
                       <GraduationCap size={18} />
                       <span>My Courses</span>
-                    </Link>
-                    <Link
-                      to="/student"
-                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
-                        isActive('/student') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
-                      }`}
-                    >
-                      <User size={18} />
-                      <span>Dashboard</span>
                     </Link>
                     <Link
                       to="/student/analytics"
@@ -108,15 +113,6 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                 {/* Teacher Links */}
                 {user.role === 'teacher' && (
                   <>
-                    <Link
-                      to="/teacher"
-                      className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
-                        isActive('/teacher') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
-                      }`}
-                    >
-                      <User size={18} />
-                      <span>Dashboard</span>
-                    </Link>
                     <Link
                       to="/teacher/courses"
                       className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
@@ -169,6 +165,15 @@ const EnhancedNavbar = ({ toggleDarkMode, isDarkMode }) => {
                   }`}
                 >
                   Courses
+                </Link>
+                <Link
+                  to="/login"
+                  className={`flex items-center space-x-1 hover:text-[#2d1b69] dark:hover:text-white transition-colors ${
+                    isActive('/login') ? 'text-[#2d1b69] dark:text-white font-semibold' : ''
+                  }`}
+                >
+                  <LayoutDashboard size={18} />
+                  <span>Dashboard</span>
                 </Link>
                 <Link
                   to="/login"

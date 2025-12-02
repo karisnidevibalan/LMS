@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Upload, Download, Trash2, FileText, Video, Image, Music, Book, Clock, Star, Tag, Globe } from 'lucide-react';
+import { useParams, Link, useLocation } from 'react-router-dom';
+import { Upload, Download, Trash2, FileText, Video, Image, Music, Book, Clock, Star, Tag, Globe, Edit, Users, CheckCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -8,11 +8,13 @@ import { cachedGet, apiDelete, clearCachePattern } from '../../utils/api';
 
 const StudyMaterialsManager = memo(() => {
   const { courseId } = useParams();
+  const location = useLocation();
   const [course, setCourse] = useState(null);
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploadLoading, setUploadLoading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const [uploadForm, setUploadForm] = useState({
     title: '',
@@ -45,7 +47,15 @@ const StudyMaterialsManager = memo(() => {
 
   useEffect(() => {
     fetchCourseAndMaterials();
-  }, [fetchCourseAndMaterials]);
+    
+    // Check if this is a newly created course
+    if (location.state?.newCourse) {
+      setShowWelcome(true);
+      if (location.state?.message) {
+        toast.success(location.state.message, { duration: 5000 });
+      }
+    }
+  }, [fetchCourseAndMaterials, location.state]);
 
   const handleFileUpload = async (e) => {
     e.preventDefault();
@@ -176,6 +186,70 @@ const StudyMaterialsManager = memo(() => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Welcome Banner for New Courses */}
+      {showWelcome && materials.length === 0 && (
+        <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-6 shadow-lg">
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-500 text-white p-3 rounded-full">
+                <CheckCircle size={28} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Course Created Successfully! 🎉
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300 mt-1">
+                  Complete these steps to get your course ready for students
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-blue-100 dark:border-blue-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Upload className="text-blue-500" size={20} />
+                <h3 className="font-semibold text-gray-900 dark:text-white">1. Upload Materials</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Add PDFs, videos, or other study materials</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-purple-100 dark:border-purple-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Edit className="text-purple-500" size={20} />
+                <h3 className="font-semibold text-gray-900 dark:text-white">2. Edit Details</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Fine-tune course description and settings</p>
+            </div>
+            
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-green-100 dark:border-green-800">
+              <div className="flex items-center gap-2 mb-2">
+                <Book className="text-green-500" size={20} />
+                <h3 className="font-semibold text-gray-900 dark:text-white">3. Publish</h3>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Make your course available to students</p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              setShowUploadForm(true);
+              setShowWelcome(false);
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+          >
+            <Upload size={20} />
+            Upload Your First Material
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <nav className="text-sm breadcrumbs mb-4">
@@ -185,6 +259,35 @@ const StudyMaterialsManager = memo(() => {
           <span className="mx-2">/</span>
           <span className="text-gray-500">Study Materials</span>
         </nav>
+
+        {/* Course Management Navigation */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Link
+            to={`/teacher/course/${courseId}/edit`}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300"
+          >
+            <Edit size={18} />
+            Edit Course Details
+          </Link>
+          <Link
+            to={`/teacher/course/${courseId}/lectures`}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300"
+          >
+            <Video size={18} />
+            Manage Lectures
+          </Link>
+          <Link
+            to={`/teacher/course/${courseId}/students`}
+            className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2 text-gray-700 dark:text-gray-300"
+          >
+            <Users size={18} />
+            View Students
+          </Link>
+          <div className="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2">
+            <Book size={18} />
+            Study Materials
+          </div>
+        </div>
         
         <div className="flex justify-between items-center">
           <div>

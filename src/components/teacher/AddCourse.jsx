@@ -28,14 +28,24 @@ const AddCourse = () => {
         // Clear cache to refresh course lists
         clearCachePattern('course');
         
-        setMessage("✅ Course added successfully!");
-        setTitle("");
-        setDescription("");
+        // Handle different response structures
+        const courseData = response.data.course || response.data;
+        const courseId = courseData?._id;
         
-        // Redirect to teacher dashboard after 2 seconds
-        setTimeout(() => {
-          navigate('/teacher');
-        }, 2000);
+        if (courseId) {
+          // Immediately redirect to materials upload page to add course content
+          navigate(`/teacher/course/${courseId}/materials`, {
+            state: { 
+              newCourse: true, 
+              message: '✅ Course created successfully! Now add study materials to get started.' 
+            }
+          });
+        } else {
+          setMessage("✅ Course added successfully!");
+          setTimeout(() => {
+            navigate('/teacher/courses');
+          }, 1500);
+        }
       } else {
         setMessage(`❌ ${response.data.error || response.data.message || "Failed to add course"}`);
       }
